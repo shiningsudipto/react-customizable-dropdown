@@ -46,6 +46,12 @@ export interface DropdownProps {
   /** Inline styles for the dropdown trigger/field area */
   triggerStyle?: CSSProperties;
 
+  /** Custom arrow/chevron icon component to display instead of the default */
+  arrowIcon?: ReactNode;
+
+  /** Custom class name for the arrow icon wrapper */
+  arrowIconClassName?: string;
+
   /** Array of options to display */
   options: DropdownOption[];
 

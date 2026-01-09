@@ -143,6 +143,76 @@ function App() {
             }}
           />
         </div>
+
+        {/* Custom Arrow Icon Example 1 - Plus/Minus */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-4">
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+            Custom Icon (Plus/Minus)
+          </h2>
+          <Dropdown
+            options={sampleOptions}
+            value={singleValue}
+            onChange={(val) => setSingleValue(val)}
+            placeholder="Select a framework"
+            arrowIcon={
+              <svg
+                className="w-4 h-4 text-blue-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+            }
+            arrowIconClassName="rotate-0"
+          />
+        </div>
+
+        {/* Custom Arrow Icon Example 2 - Circle Arrow */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-4">
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+            Custom Icon (Circle)
+          </h2>
+          <Dropdown
+            options={sampleOptions}
+            value={multiValue}
+            onChange={(val) => setMultiValue(val)}
+            placeholder="Select options"
+            multiSelect
+            arrowIcon={
+              <svg
+                className="w-5 h-5 text-purple-500"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            }
+          />
+        </div>
+
+        {/* Custom Arrow Icon Example 3 - Emoji */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-4">
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+            Custom Icon (Emoji)
+          </h2>
+          <Dropdown
+            options={sampleOptions}
+            value={asyncValue}
+            onChange={(val) => setAsyncValue(val)}
+            placeholder="Fun dropdown!"
+            arrowIcon={<span className="text-lg">👇</span>}
+          />
+        </div>
       </div>
     </div>
   );
