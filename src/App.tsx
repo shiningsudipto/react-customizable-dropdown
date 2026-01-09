@@ -26,15 +26,14 @@ function App() {
 
   // Async Mock
   const [asyncOptions, setAsyncOptions] = useState<DropdownOption[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [asyncValue, setAsyncValue] = useState<
     string | number | (string | number)[] | undefined
   >();
 
   useEffect(() => {
     // Simulate API call
-    setIsLoading(true);
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       setAsyncOptions([
         { value: "api-1", label: "Fetched Item 1" },
         { value: "api-2", label: "Fetched Item 2" },
@@ -42,6 +41,8 @@ function App() {
       ]);
       setIsLoading(false);
     }, 2000);
+
+    return () => clearTimeout(timer);
   }, []);
 
   return (
@@ -103,24 +104,6 @@ function App() {
           </button>
         </div>
 
-        {/* Completely Custom Style */}
-        <div className="col-span-1 md:col-span-2 bg-gradient-to-r from-purple-600 to-indigo-600 p-6 rounded-xl shadow-sm flex flex-col gap-4 text-white">
-          <h2 className="text-sm font-semibold text-white/90 uppercase tracking-wide">
-            Deep Customization
-          </h2>
-          <div className="max-w-md w-full">
-            <Dropdown
-              label="Customization Testing"
-              labelClassName="text-white text-lg mb-1"
-              options={sampleOptions}
-              value={singleValue}
-              onChange={(val) => setSingleValue(val)}
-              placeholder="Custom Styled"
-              theme={{}}
-            />
-          </div>
-        </div>
-
         {/* Custom Theme (Dark) */}
         <div className="bg-gray-900 p-6 rounded-xl shadow-sm border border-gray-800 flex flex-col gap-4">
           <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">
@@ -133,7 +116,6 @@ function App() {
             placeholder="Dark Mode Select"
             theme={{
               backgroundColor: "#1f2937",
-              borderColor: "#374151",
               textColor: "#fff",
               hoverColor: "#374151",
               primaryColor: "#60a5fa",
@@ -144,49 +126,27 @@ function App() {
           />
         </div>
 
-        {/* Custom Arrow Icon Example 1 - Plus/Minus */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-4">
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
-            Custom Icon (Plus/Minus)
-          </h2>
-          <Dropdown
-            options={sampleOptions}
-            value={singleValue}
-            onChange={(val) => setSingleValue(val)}
-            placeholder="Select a framework"
-            arrowIcon={
-              <svg
-                className="w-4 h-4 text-blue-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-            }
-            arrowIconClassName="rotate-0"
-          />
-        </div>
-
-        {/* Custom Arrow Icon Example 2 - Circle Arrow */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-4">
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
-            Custom Icon (Circle)
+        {/* Example 1 - Stunning Purple Gradient */}
+        <div className="bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50 p-6 rounded-2xl shadow-lg border border-purple-100 flex flex-col gap-4">
+          <h2 className="text-sm font-bold text-purple-700 uppercase tracking-wider flex items-center gap-2">
+            <span className="text-lg">✨</span> Premium Multi-Select
           </h2>
           <Dropdown
             options={sampleOptions}
             value={multiValue}
             onChange={(val) => setMultiValue(val)}
-            placeholder="Select options"
+            placeholder="Choose your favorite frameworks..."
             multiSelect
+            searchable
+            label="Tech Stack Selection"
+            labelClassName="text-purple-900 font-semibold text-sm mb-1"
+            triggerClassName="border-2 border-purple-300 rounded-xl px-4 py-3 hover:border-purple-400 hover:shadow-md transition-all duration-300 bg-white/80 backdrop-blur-sm"
+            menuClassName="shadow-2xl border-2 border-purple-200"
+            optionClassName="hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 px-4 py-3"
+            selectedOptionClassName="bg-gradient-to-r from-purple-100 to-pink-100 text-purple-900 font-medium"
             arrowIcon={
               <svg
-                className="w-5 h-5 text-purple-500"
+                className="w-5 h-5 text-purple-600"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -197,20 +157,74 @@ function App() {
                 />
               </svg>
             }
+            arrowIconClassName="animate-bounce-slow"
+            theme={{
+              primaryColor: "#a855f7",
+              backgroundColor: "rgba(255, 255, 255, 0.9)",
+              hoverColor: "#faf5ff",
+              textColor: "#581c87",
+              focusBorderColor: "#c084fc",
+              selectedOptionTextColor: "#7c3aed",
+              selectedOptionBackgroundColor: "#f3e8ff",
+              multiSelectSelectedOptionTextColor: "#ffffff",
+              multiSelectSelectedOptionBackgroundColor: "#a855f7",
+              menuBackgroundColor: "#ffffff",
+              optionTextColor: "#6b21a8",
+            }}
           />
         </div>
 
-        {/* Custom Arrow Icon Example 3 - Emoji */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-4">
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
-            Custom Icon (Emoji)
+        {/* Example 2 - Ocean Breeze Theme */}
+        <div className="bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 p-6 rounded-2xl shadow-lg border border-cyan-100 flex flex-col gap-4 relative">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-200/30 to-cyan-200/30 rounded-full blur-3xl -z-10"></div>
+          <h2 className="text-sm font-bold text-cyan-700 uppercase tracking-wider flex items-center gap-2">
+            <span className="text-lg">🌊</span> Ocean Breeze
           </h2>
           <Dropdown
             options={sampleOptions}
             value={asyncValue}
             onChange={(val) => setAsyncValue(val)}
-            placeholder="Fun dropdown!"
-            arrowIcon={<span className="text-lg">👇</span>}
+            placeholder="Dive into your selection..."
+            searchable
+            label="Featured Framework"
+            labelClassName="text-cyan-900 font-semibold text-sm mb-1"
+            triggerClassName="border-2 border-cyan-300 rounded-2xl px-5 py-4 hover:border-cyan-500 hover:shadow-xl transition-all duration-300 bg-white/90 backdrop-blur-md hover:scale-[1.02]"
+            menuClassName="shadow-2xl border-2 border-cyan-200 rounded-2xl"
+            optionClassName="hover:bg-gradient-to-r hover:from-cyan-50 hover:to-blue-50 px-5 py-3 transition-all duration-200"
+            selectedOptionClassName="bg-gradient-to-r from-cyan-100 to-blue-100 text-cyan-900 font-semibold border-l-4 border-cyan-500"
+            arrowIcon={
+              <div className="relative">
+                <svg
+                  className="w-6 h-6 text-cyan-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2.5}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </div>
+            }
+            arrowIconClassName="transition-transform duration-500 ease-out"
+            theme={{
+              primaryColor: "#06b6d4",
+              backgroundColor: "rgba(255, 255, 255, 0.95)",
+              hoverColor: "#ecfeff",
+              textColor: "#164e63",
+              focusBorderColor: "#0891b2",
+              selectedOptionTextColor: "#0e7490",
+              selectedOptionBackgroundColor: "#cffafe",
+              menuBackgroundColor: "#ffffff",
+              optionTextColor: "#155e75",
+              padding: "0.75rem 1.25rem",
+            }}
+            triggerStyle={{
+              boxShadow: "0 4px 20px rgba(6, 182, 212, 0.1)",
+            }}
           />
         </div>
       </div>

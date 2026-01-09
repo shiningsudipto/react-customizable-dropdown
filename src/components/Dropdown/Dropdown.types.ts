@@ -5,7 +5,6 @@ export interface DropdownOption {
   label: ReactNode;
   disabled?: boolean;
   group?: string;
-  [key: string]: any;
 }
 
 export interface DropdownTheme {
@@ -13,8 +12,6 @@ export interface DropdownTheme {
   backgroundColor?: string;
   hoverColor?: string;
   textColor?: string;
-  borderColor?: string;
-  borderRadius?: string;
   padding?: string;
   menuBackgroundColor?: string;
   optionTextColor?: string;
@@ -22,6 +19,7 @@ export interface DropdownTheme {
   selectedOptionBackgroundColor?: string;
   multiSelectSelectedOptionTextColor?: string;
   multiSelectSelectedOptionBackgroundColor?: string;
+  focusBorderColor?: string;
 }
 
 export interface DropdownProps {

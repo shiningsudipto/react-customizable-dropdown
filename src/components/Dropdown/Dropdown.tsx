@@ -39,8 +39,6 @@ export const Dropdown: React.FC<DropdownProps> = ({
       backgroundColor: "#ffffff",
       hoverColor: "#eff6ff", // blue-50
       textColor: "#1f2937", // gray-800
-      borderColor: "#d1d5db", // gray-300
-      borderRadius: "0.5rem", // rounded-lg
       padding: "0.5rem 1rem",
       menuBackgroundColor: "#ffffff",
       optionTextColor: "#1f2937",
@@ -48,6 +46,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
       selectedOptionBackgroundColor: "#eff6ff",
       multiSelectSelectedOptionTextColor: "#1e40af", // blue-800
       multiSelectSelectedOptionBackgroundColor: "#dbeafe", // blue-100
+      focusBorderColor: "#3b82f6", // blue-500 (defaults to primaryColor)
     };
 
     const userTheme = theme || {};
@@ -82,6 +81,10 @@ export const Dropdown: React.FC<DropdownProps> = ({
       selectedOptionBackgroundColor: processedSelectedBg,
       multiSelectSelectedOptionTextColor: processedMultiSelectedText,
       multiSelectSelectedOptionBackgroundColor: processedMultiSelectedBg,
+      focusBorderColor:
+        userTheme.focusBorderColor ??
+        userTheme.primaryColor ??
+        defaultTheme.focusBorderColor,
     };
 
     return {
@@ -89,8 +92,6 @@ export const Dropdown: React.FC<DropdownProps> = ({
       "--dd-bg": finalTheme.backgroundColor,
       "--dd-hover": finalTheme.hoverColor,
       "--dd-text": finalTheme.textColor,
-      "--dd-border": finalTheme.borderColor,
-      "--dd-radius": finalTheme.borderRadius,
       "--dd-padding": finalTheme.padding,
       "--dd-menu-bg": finalTheme.menuBackgroundColor,
       "--dd-option-text": finalTheme.optionTextColor,
@@ -99,6 +100,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
       "--dd-multi-selected-text": finalTheme.multiSelectSelectedOptionTextColor,
       "--dd-multi-selected-bg":
         finalTheme.multiSelectSelectedOptionBackgroundColor,
+      "--dd-focus-border": finalTheme.focusBorderColor,
       ...style,
     } as CSSProperties;
   }, [theme, style]);
@@ -124,10 +126,25 @@ export const Dropdown: React.FC<DropdownProps> = ({
     if (!disabled) {
       setIsOpen(!isOpen);
       if (!isOpen) {
-        setSearchValue("");
         setHighlightedIndex(-1);
         setTimeout(() => {
           if (searchable && inputRef.current) {
+            inputRef.current.focus();
+          }
+        }, 0);
+      }
+    }
+  };
+
+  const handleTriggerClick = () => {
+    if (!searchable) {
+      toggleDropdown();
+    } else {
+      if (!isOpen) {
+        setIsOpen(true);
+        setHighlightedIndex(-1);
+        setTimeout(() => {
+          if (inputRef.current) {
             inputRef.current.focus();
           }
         }, 0);
@@ -169,6 +186,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
       newValue = option.value;
       newOption = option;
       setIsOpen(false);
+      setSearchValue("");
     }
 
     if (onChange) {
@@ -192,8 +210,17 @@ export const Dropdown: React.FC<DropdownProps> = ({
 
   const handleClear = (e: React.MouseEvent) => {
     e.stopPropagation();
+
+    // If dropdown is open and searchable, clear search and close dropdown
+    if (isOpen && searchable) {
+      setSearchValue("");
+      setIsOpen(false);
+      return;
+    }
+
+    // Otherwise, clear the selected values
     if (onChange) {
-      onChange(multiSelect ? [] : "", multiSelect ? [] : ({} as any));
+      onChange(multiSelect ? [] : "", multiSelect ? [] : []);
     }
   };
 
@@ -302,39 +329,51 @@ export const Dropdown: React.FC<DropdownProps> = ({
 
       {/* Trigger / Input Area */}
       <div
-        onClick={toggleDropdown}
+        onClick={handleTriggerClick}
         className={`
           flex items-center justify-between
           w-full
-          bg-[var(--dd-bg)] border border-[var(--dd-border)] cursor-pointer
+          bg-[var(--dd-bg)]
+          cursor-pointer
           transition-all duration-200
           text-[var(--dd-text)]
-          ${
-            isOpen
-              ? "ring-2 ring-[var(--dd-primary)] border-[var(--dd-primary)]"
-              : "hover:border-gray-400"
-          }
-          ${triggerClassName}
+          ${triggerClassName || "border rounded-lg"}
         `}
         style={{
-          borderRadius: "var(--dd-radius)",
-          padding: "var(--dd-padding)",
-          minHeight: "42px",
+          padding: triggerClassName ? undefined : "var(--dd-padding)",
+          minHeight: triggerClassName ? undefined : "42px",
+          borderColor: triggerClassName
+            ? undefined
+            : isOpen
+            ? "var(--dd-focus-border)"
+            : "#d1d5db",
           outline: "none",
-          ...(triggerClassName && {
-            borderRadius: undefined,
-            padding: undefined,
-            minHeight: undefined,
-          }),
           ...triggerStyle,
         }}
         role="button"
-        tabIndex={0}
+        tabIndex={searchable ? -1 : 0}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
       >
         <div className="flex flex-wrap gap-1 flex-1 overflow-hidden">
-          {selectedOptions.length === 0 ? (
+          {searchable && (isOpen || selectedOptions.length === 0) ? (
+            <input
+              ref={inputRef}
+              type="text"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={selectedOptions.length === 0 ? placeholder : "Search..."}
+              className="flex-1 outline-none bg-transparent min-w-[60px]"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!isOpen) {
+                  setIsOpen(true);
+                }
+              }}
+              disabled={disabled}
+            />
+          ) : selectedOptions.length === 0 ? (
             <span className="text-gray-400">{placeholder}</span>
           ) : multiSelect ? (
             selectedOptions.map((opt) => (
@@ -368,27 +407,33 @@ export const Dropdown: React.FC<DropdownProps> = ({
           )}
 
           {/* Clear Icon */}
-          {!loading && selectedOptions.length > 0 && !disabled && (
-            <div
-              onClick={handleClear}
-              className="p-1 hover:bg-gray-100 rounded-full transition-colors z-10"
-              title="Clear"
-            >
-              <svg
-                className="w-3 h-3 text-gray-400 hover:text-gray-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+          {!loading &&
+            !disabled &&
+            (selectedOptions.length > 0 || (isOpen && searchable && searchValue)) && (
+              <div
+                onClick={handleClear}
+                className="p-1 hover:bg-gray-100 rounded-full transition-colors z-10"
+                title={
+                  isOpen && searchable
+                    ? "Clear search"
+                    : "Clear selection"
+                }
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </div>
-          )}
+                <svg
+                  className="w-3 h-3 text-gray-400 hover:text-gray-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </div>
+            )}
 
           {/* Chevron Icon */}
           <div
@@ -420,24 +465,8 @@ export const Dropdown: React.FC<DropdownProps> = ({
       {/* Dropdown Menu */}
       {isOpen && (
         <div
-          className={`absolute z-50 w-full mt-1 bg-[var(--dd-menu-bg)] border border-[var(--dd-border)] shadow-lg max-h-60 overflow-hidden flex flex-col animate-enter ${menuClassName}`}
-          style={{ borderRadius: "var(--dd-radius)" }}
+          className={`absolute z-50 w-full mt-1 bg-[var(--dd-menu-bg)] border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-hidden flex flex-col animate-enter ${menuClassName}`}
         >
-          {searchable && (
-            <div className="p-2 border-b border-[var(--dd-border)] bg-[var(--dd-menu-bg)]">
-              <input
-                ref={inputRef}
-                type="text"
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Search..."
-                className="w-full px-3 py-1 text-sm border border-[var(--dd-border)] rounded-md focus:outline-none focus:border-[var(--dd-primary)] bg-[var(--dd-menu-bg)] text-[var(--dd-text)]"
-                onClick={(e) => e.stopPropagation()}
-              />
-            </div>
-          )}
-
           {loading ? (
             <div className="px-4 py-8 flex justify-center items-center text-gray-400">
               <div className="animate-spin h-6 w-6 border-2 border-[var(--dd-primary)] border-t-transparent rounded-full mr-2"></div>
