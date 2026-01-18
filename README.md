@@ -1,4 +1,4 @@
-# @your-username/dropdown
+# @shiningsudipto/react-customizable-dropdown
 
 A highly customizable, accessible, and premium React Dropdown component built with TypeScript and Tailwind-inspired styling.
 
@@ -18,17 +18,17 @@ A highly customizable, accessible, and premium React Dropdown component built wi
 ## Installation
 
 ```bash
-npm install @your-username/dropdown
+npm install @shiningsudipto/react-customizable-dropdown
 # or
-yarn add @your-username/dropdown
+yarn add @shiningsudipto/react-customizable-dropdown
 # or
-pnpm add @your-username/dropdown
+pnpm add @shiningsudipto/react-customizable-dropdown
 ```
 
 ## Basic Usage
 
 ```tsx
-import { Dropdown } from "@your-username/dropdown";
+import { Dropdown } from "@shiningsudipto/react-customizable-dropdown";
 import { useState } from "react";
 
 const options = [
@@ -109,49 +109,6 @@ Enable multiple selections and search filter:
 
 ---
 
-## Guidelines for Publishing and Usage
-
-### How to Publish
-
-1.  **Prepare for Publishing**:
-    - Build the package to generate the `dist` folder:
-      ```bash
-      npm run build
-      ```
-    - Ensure your `package.json` has a unique `name` (e.g., `@your-org/dropdown`).
-    - Login to NPM:
-      ```bash
-      npm login
-      ```
-
-2.  **Publish**:
-    - For public scoped packages:
-      ```bash
-      npm publish --access public
-      ```
-    - For private packages (requires paid plan):
-      ```bash
-      npm publish
-      ```
-
-3.  **Versioning**:
-    - Update the version before publishing new changes:
-      ```bash
-      npm version patch # 1.0.0 -> 1.0.1
-      ```
-
-### How to Use in Your Projects
-
-1.  **Import Styles**:
-    Make sure your project supports CSS imports (standard in Next.js/Vite). The component uses Tailwind-like CSS variables.
-2.  **External Styling**:
-    You can pass `className` or `triggerClassName`, `menuClassName`, and `optionClassName` to stylize the component using your utility classes (like Tailwind).
-
-3.  **Types**:
-    The package includes TypeScript definitions (`.d.ts`) automatically, so you'll get full IntelliSense in VS Code.
-
----
-
 ## License
 
-MIT © [your-username]
+MIT © [shiningsudipto]

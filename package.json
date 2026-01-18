@@ -1,5 +1,5 @@
 {
-  "name": "@your-username/dropdown",
+  "name": "@shiningsudipto/react-customizable-dropdown",
   "version": "1.0.0",
   "type": "module",
   "main": "./dist/dropdown.umd.js",
