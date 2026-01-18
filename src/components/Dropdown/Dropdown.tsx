@@ -23,6 +23,10 @@ export const Dropdown: React.FC<DropdownProps> = ({
   triggerStyle = {},
   arrowIcon,
   arrowIconClassName = "",
+  labelField = "label",
+  valueField = "value",
+  sublabelField = "sublabel",
+  sublabelClassName = "",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   // ... (rest of state)
@@ -155,9 +159,9 @@ export const Dropdown: React.FC<DropdownProps> = ({
   const getSelectedOptions = (): DropdownOption[] => {
     if (value === undefined || value === null) return [];
     if (Array.isArray(value)) {
-      return options.filter((opt) => value.includes(opt.value));
+      return options.filter((opt) => value.includes(opt[valueField]));
     }
-    const found = options.find((opt) => opt.value === value);
+    const found = options.find((opt) => opt[valueField] === value);
     return found ? [found] : [];
   };
 
@@ -167,23 +171,23 @@ export const Dropdown: React.FC<DropdownProps> = ({
     e?.stopPropagation();
     if (option.disabled) return;
 
-    let newValue: string | number | (string | number)[];
+    let newValue: any;
     let newOption: DropdownOption | DropdownOption[];
 
     if (multiSelect) {
       const currentValues = Array.isArray(value) ? value : value ? [value] : [];
-      const isSelected = currentValues.includes(option.value);
+      const isSelected = currentValues.includes(option[valueField]);
 
       if (isSelected) {
-        newValue = currentValues.filter((v) => v !== option.value);
+        newValue = currentValues.filter((v) => v !== option[valueField]);
       } else {
-        newValue = [...currentValues, option.value];
+        newValue = [...currentValues, option[valueField]];
       }
       newOption = options.filter((opt) =>
-        (newValue as (string | number)[]).includes(opt.value)
+        (newValue as any[]).includes(opt[valueField]),
       );
     } else {
-      newValue = option.value;
+      newValue = option[valueField];
       newOption = option;
       setIsOpen(false);
       setSearchValue("");
@@ -196,14 +200,16 @@ export const Dropdown: React.FC<DropdownProps> = ({
 
   const handleRemoveOption = (
     optionValue: string | number,
-    e: React.MouseEvent
+    e: React.MouseEvent,
   ) => {
     e.stopPropagation();
     if (!onChange) return;
 
     const currentValues = Array.isArray(value) ? value : value ? [value] : [];
     const newValue = currentValues.filter((v) => v !== optionValue);
-    const newOptions = options.filter((opt) => newValue.includes(opt.value));
+    const newOptions = options.filter((opt) =>
+      newValue.includes(opt[valueField]),
+    );
 
     onChange(newValue, newOptions);
   };
@@ -229,10 +235,12 @@ export const Dropdown: React.FC<DropdownProps> = ({
       options.filter((opt) => {
         if (!searchable || !searchValue) return true;
         const labelString =
-          typeof opt.label === "string" ? opt.label : String(opt.value);
+          typeof opt[labelField] === "string"
+            ? opt[labelField]
+            : String(opt[valueField]);
         return labelString.toLowerCase().includes(searchValue.toLowerCase());
       }),
-    [options, searchable, searchValue]
+    [options, searchable, searchValue],
   );
 
   // Keyboard Navigation
@@ -266,7 +274,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
           setHighlightedIndex(0);
         } else {
           setHighlightedIndex((prev) =>
-            prev < filteredOptions.length - 1 ? prev + 1 : prev
+            prev < filteredOptions.length - 1 ? prev + 1 : prev,
           );
         }
         break;
@@ -345,8 +353,8 @@ export const Dropdown: React.FC<DropdownProps> = ({
           borderColor: triggerClassName
             ? undefined
             : isOpen
-            ? "var(--dd-focus-border)"
-            : "#d1d5db",
+              ? "var(--dd-focus-border)"
+              : "#d1d5db",
           outline: "none",
           ...triggerStyle,
         }}
@@ -363,7 +371,9 @@ export const Dropdown: React.FC<DropdownProps> = ({
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={selectedOptions.length === 0 ? placeholder : "Search..."}
+              placeholder={
+                selectedOptions.length === 0 ? placeholder : "Search..."
+              }
               className="flex-1 outline-none bg-transparent min-w-[60px]"
               onClick={(e) => {
                 e.stopPropagation();
@@ -378,7 +388,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
           ) : multiSelect ? (
             selectedOptions.map((opt) => (
               <span
-                key={opt.value}
+                key={opt[valueField]}
                 className="inline-flex items-center px-2 py-0.5 rounded text-sm animate-fadeIn"
                 style={{
                   backgroundColor: "var(--dd-multi-selected-bg)",
@@ -386,18 +396,18 @@ export const Dropdown: React.FC<DropdownProps> = ({
                 }}
                 onClick={(e) => e.stopPropagation()}
               >
-                {opt.label}
+                {opt[labelField]}
                 <span
                   className="ml-1 cursor-pointer font-bold"
                   style={{ color: "currentColor", opacity: 0.8 }}
-                  onClick={(e) => handleRemoveOption(opt.value, e)}
+                  onClick={(e) => handleRemoveOption(opt[valueField], e)}
                 >
                   &times;
                 </span>
               </span>
             ))
           ) : (
-            <span className="truncate">{selectedOptions[0].label}</span>
+            <span className="truncate">{selectedOptions[0][labelField]}</span>
           )}
         </div>
 
@@ -409,14 +419,13 @@ export const Dropdown: React.FC<DropdownProps> = ({
           {/* Clear Icon */}
           {!loading &&
             !disabled &&
-            (selectedOptions.length > 0 || (isOpen && searchable && searchValue)) && (
+            (selectedOptions.length > 0 ||
+              (isOpen && searchable && searchValue)) && (
               <div
                 onClick={handleClear}
                 className="p-1 hover:bg-gray-100 rounded-full transition-colors z-10"
                 title={
-                  isOpen && searchable
-                    ? "Clear search"
-                    : "Clear selection"
+                  isOpen && searchable ? "Clear search" : "Clear selection"
                 }
               >
                 <svg
@@ -480,11 +489,11 @@ export const Dropdown: React.FC<DropdownProps> = ({
                 </li>
               ) : (
                 filteredOptions.map((option, index) => {
-                  const checked = isSelected(option.value);
+                  const checked = isSelected(option[valueField]);
                   const isHighlighted = index === highlightedIndex;
                   return (
                     <li
-                      key={option.value}
+                      key={option[valueField]}
                       className={`
                         px-4 py-2 cursor-pointer transition-colors duration-150 flex items-center justify-between
                         text-[var(--dd-option-text)]
@@ -496,20 +505,20 @@ export const Dropdown: React.FC<DropdownProps> = ({
                           checked && selectedOptionClassName
                             ? undefined
                             : isHighlighted && !optionClassName
-                            ? "var(--dd-hover)"
-                            : checked
-                            ? "var(--dd-selected-bg)"
-                            : optionClassName
-                            ? undefined
-                            : "transparent",
+                              ? "var(--dd-hover)"
+                              : checked
+                                ? "var(--dd-selected-bg)"
+                                : optionClassName
+                                  ? undefined
+                                  : "transparent",
                         color:
                           checked && selectedOptionClassName
                             ? undefined
                             : optionClassName
-                            ? undefined
-                            : checked
-                            ? "var(--dd-selected-text)"
-                            : "var(--dd-option-text)",
+                              ? undefined
+                              : checked
+                                ? "var(--dd-selected-text)"
+                                : "var(--dd-option-text)",
                         fontWeight: checked ? 500 : 400,
                       }}
                       onMouseEnter={() => setHighlightedIndex(index)}
@@ -517,7 +526,16 @@ export const Dropdown: React.FC<DropdownProps> = ({
                       aria-selected={checked}
                       onClick={(e) => handleOptionClick(option, e)}
                     >
-                      <span>{option.label}</span>
+                      <div className="flex flex-col">
+                        <span>{option[labelField]}</span>
+                        {option[sublabelField] && (
+                          <span
+                            className={`text-xs text-gray-500 mt-0.5 ${sublabelClassName}`}
+                          >
+                            {option[sublabelField]}
+                          </span>
+                        )}
+                      </div>
                       {checked && (
                         <svg
                           className="w-4 h-4"

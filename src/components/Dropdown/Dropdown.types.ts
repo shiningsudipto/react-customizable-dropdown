@@ -1,10 +1,12 @@
 import type { ReactNode, CSSProperties } from "react";
 
 export interface DropdownOption {
-  value: string | number;
-  label: ReactNode;
+  value?: any;
+  label?: any;
+  sublabel?: any;
   disabled?: boolean;
   group?: string;
+  [key: string]: any;
 }
 
 export interface DropdownTheme {
@@ -50,17 +52,26 @@ export interface DropdownProps {
   /** Custom class name for the arrow icon wrapper */
   arrowIconClassName?: string;
 
+  /** Field name for the label from the option object (defaults to 'label') */
+  labelField?: string;
+
+  /** Field name for the value from the option object (defaults to 'value') */
+  valueField?: string;
+
+  /** Field name for the sublabel from the option object (defaults to 'sublabel') */
+  sublabelField?: string;
+
+  /** Custom classes for the sublabel */
+  sublabelClassName?: string;
+
   /** Array of options to display */
   options: DropdownOption[];
 
   /** Current selected value(s) */
-  value?: string | number | (string | number)[];
+  value?: any;
 
   /** Callback when selection changes */
-  onChange?: (
-    value: string | number | (string | number)[],
-    option?: DropdownOption | DropdownOption[]
-  ) => void;
+  onChange?: (value: any, option?: DropdownOption | DropdownOption[]) => void;
 
   /** Placeholder text when nothing is selected */
   placeholder?: string;
