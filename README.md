@@ -1,4 +1,4 @@
-# @shiningsudipto/react-customizable-dropdown
+# react-customizable-dropdown
 
 A highly customizable, accessible, and premium React Dropdown component built with TypeScript and Tailwind-inspired styling.
 
@@ -18,17 +18,17 @@ A highly customizable, accessible, and premium React Dropdown component built wi
 ## Installation
 
 ```bash
-npm install @shiningsudipto/react-customizable-dropdown
+npm install react-customizable-dropdown
 # or
-yarn add @shiningsudipto/react-customizable-dropdown
+yarn add react-customizable-dropdown
 # or
-pnpm add @shiningsudipto/react-customizable-dropdown
+pnpm add react-customizable-dropdown
 ```
 
 ## Basic Usage
 
 ```tsx
-import { Dropdown } from "@shiningsudipto/react-customizable-dropdown";
+import { Dropdown } from "react-customizable-dropdown";
 import { useState } from "react";
 
 const options = [
