@@ -1,7 +1,7 @@
 {
   "name": "react-customizable-dropdown",
   "version": "1.0.3",
-  "description": "A highly customizable, accessible, and premium React Dropdown component with built-in search, multi-select, field mapping, sublabels, and extensive theming options.",
+  "description": "A highly customizable, accessible, and premium React Dropdown component with built-in search, multi-select, field mapping, debouncing, sublabels, and extensive theming options.",
   "type": "module",
   "main": "./dist/dropdown.umd.js",
   "module": "./dist/dropdown.es.js",
@@ -51,7 +51,7 @@
   "bugs": {
     "url": "https://github.com/shiningsudipto/react-customizable-dropdown/issues"
   },
-  "homepage": "https://github.com/shiningsudipto/react-customizable-dropdown",
+  "homepage": "https://react-customizable-dropdown.vercel.app",
   "publishConfig": {
     "access": "public"
   },
