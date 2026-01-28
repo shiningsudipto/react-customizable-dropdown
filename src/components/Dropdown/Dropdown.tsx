@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
-import type { CSSProperties } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
+import type { CSSProperties, FC } from "react";
 import type { DropdownProps, DropdownOption } from "./Dropdown.types";
 
-export const Dropdown: React.FC<DropdownProps> = ({
+export const Dropdown: FC<DropdownProps> = ({
   options,
   value,
   onChange,
