@@ -1,6 +1,190 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import type { CSSProperties, FC } from "react";
+import type { FC } from "react";
 import type { DropdownProps, DropdownOption } from "./Dropdown.types";
+
+// Inline styles to avoid Tailwind dependency in consumer projects
+const styles = {
+  container: {
+    position: "relative" as const,
+    width: "100%",
+  },
+  containerDisabled: {
+    opacity: 0.6,
+    cursor: "not-allowed",
+  },
+  label: {
+    display: "block",
+    marginBottom: "4px",
+    fontSize: "14px",
+    fontWeight: 500,
+    color: "#374151",
+    cursor: "pointer",
+  },
+  trigger: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "100%",
+    cursor: "pointer",
+    transition: "all 0.2s",
+    border: "1px solid #d1d5db",
+    borderRadius: "8px",
+    outline: "none",
+  },
+  triggerContent: {
+    display: "flex",
+    flexWrap: "wrap" as const,
+    gap: "4px",
+    flex: 1,
+    overflow: "hidden",
+  },
+  searchInput: {
+    flex: 1,
+    outline: "none",
+    border: "none",
+    background: "transparent",
+    minWidth: "60px",
+    fontSize: "inherit",
+    color: "inherit",
+    padding: 0,
+    margin: 0,
+  },
+  placeholder: {
+    color: "#9ca3af",
+  },
+  multiTag: {
+    display: "inline-flex",
+    alignItems: "center",
+    padding: "2px 8px",
+    borderRadius: "4px",
+    fontSize: "14px",
+  },
+  multiTagRemove: {
+    marginLeft: "4px",
+    cursor: "pointer",
+    fontWeight: "bold",
+    opacity: 0.8,
+  },
+  actionsContainer: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    marginLeft: "8px",
+  },
+  spinner: {
+    width: "16px",
+    height: "16px",
+    border: "2px solid",
+    borderTopColor: "transparent",
+    borderRadius: "50%",
+    animation: "dropdown-spin 1s linear infinite",
+  },
+  clearButton: {
+    padding: "4px",
+    borderRadius: "50%",
+    transition: "background-color 0.2s",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  icon: {
+    width: "12px",
+    height: "12px",
+    color: "#9ca3af",
+  },
+  chevronContainer: {
+    transition: "transform 0.2s",
+  },
+  chevronIcon: {
+    width: "16px",
+    height: "16px",
+    color: "#6b7280",
+  },
+  menu: {
+    position: "absolute" as const,
+    zIndex: 50,
+    width: "100%",
+    marginTop: "4px",
+    border: "1px solid #d1d5db",
+    borderRadius: "8px",
+    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+    maxHeight: "240px",
+    overflow: "hidden",
+    display: "flex",
+    flexDirection: "column" as const,
+  },
+  loadingContainer: {
+    padding: "32px 16px",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    color: "#9ca3af",
+  },
+  loadingSpinner: {
+    width: "24px",
+    height: "24px",
+    border: "2px solid",
+    borderTopColor: "transparent",
+    borderRadius: "50%",
+    marginRight: "8px",
+    animation: "dropdown-spin 1s linear infinite",
+  },
+  optionsList: {
+    padding: "4px 0",
+    overflowY: "auto" as const,
+    margin: 0,
+    listStyle: "none",
+  },
+  option: {
+    padding: "8px 16px",
+    cursor: "pointer",
+    transition: "background-color 0.15s",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  optionDisabled: {
+    opacity: 0.5,
+    cursor: "not-allowed",
+  },
+  optionContent: {
+    display: "flex",
+    flexDirection: "column" as const,
+  },
+  sublabel: {
+    fontSize: "12px",
+    color: "#6b7280",
+    marginTop: "2px",
+  },
+  checkIcon: {
+    width: "16px",
+    height: "16px",
+    flexShrink: 0,
+  },
+  noOptions: {
+    padding: "8px 16px",
+    color: "#6b7280",
+    textAlign: "center" as const,
+    fontSize: "14px",
+  },
+};
+
+// Inject keyframes for spinner animation
+const injectKeyframes = () => {
+  if (typeof document === "undefined") return;
+  const styleId = "dropdown-keyframes";
+  if (document.getElementById(styleId)) return;
+
+  const style = document.createElement("style");
+  style.id = styleId;
+  style.textContent = `
+    @keyframes dropdown-spin {
+      to { transform: rotate(360deg); }
+    }
+  `;
+  document.head.appendChild(style);
+};
 
 export const Dropdown: FC<DropdownProps> = ({
   options,
@@ -29,32 +213,35 @@ export const Dropdown: FC<DropdownProps> = ({
   sublabelClassName = "",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  // ... (rest of state)
   const [searchValue, setSearchValue] = useState("");
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Inject keyframes on mount
+  useEffect(() => {
+    injectKeyframes();
+  }, []);
+
   // Styling Logic
   const themeStyles = useMemo(() => {
     const defaultTheme = {
-      primaryColor: "#3b82f6", // blue-500
+      primaryColor: "#3b82f6",
       backgroundColor: "#ffffff",
-      hoverColor: "#eff6ff", // blue-50
-      textColor: "#1f2937", // gray-800
+      hoverColor: "#eff6ff",
+      textColor: "#1f2937",
       padding: "0.5rem 1rem",
       menuBackgroundColor: "#ffffff",
       optionTextColor: "#1f2937",
       selectedOptionTextColor: "#3b82f6",
       selectedOptionBackgroundColor: "#eff6ff",
-      multiSelectSelectedOptionTextColor: "#1e40af", // blue-800
-      multiSelectSelectedOptionBackgroundColor: "#dbeafe", // blue-100
-      focusBorderColor: "#3b82f6", // blue-500 (defaults to primaryColor)
+      multiSelectSelectedOptionTextColor: "#1e40af",
+      multiSelectSelectedOptionBackgroundColor: "#dbeafe",
+      focusBorderColor: "#3b82f6",
     };
 
     const userTheme = theme || {};
-    // Use user specific theme props if available, else fallback to relevant logical defaults
     const processedSelectedText =
       userTheme.selectedOptionTextColor ??
       userTheme.primaryColor ??
@@ -63,14 +250,12 @@ export const Dropdown: FC<DropdownProps> = ({
       userTheme.selectedOptionBackgroundColor ??
       userTheme.hoverColor ??
       defaultTheme.selectedOptionBackgroundColor;
-
     const processedMultiSelectedText =
-      userTheme.multiSelectSelectedOptionTextColor ?? "#1e40af"; // default fallback
-
+      userTheme.multiSelectSelectedOptionTextColor ?? "#1e40af";
     const processedMultiSelectedBg =
-      userTheme.multiSelectSelectedOptionBackgroundColor ?? "#dbeafe"; // default fallback
+      userTheme.multiSelectSelectedOptionBackgroundColor ?? "#dbeafe";
 
-    const finalTheme = {
+    return {
       ...defaultTheme,
       ...userTheme,
       menuBackgroundColor:
@@ -90,24 +275,7 @@ export const Dropdown: FC<DropdownProps> = ({
         userTheme.primaryColor ??
         defaultTheme.focusBorderColor,
     };
-
-    return {
-      "--dd-primary": finalTheme.primaryColor,
-      "--dd-bg": finalTheme.backgroundColor,
-      "--dd-hover": finalTheme.hoverColor,
-      "--dd-text": finalTheme.textColor,
-      "--dd-padding": finalTheme.padding,
-      "--dd-menu-bg": finalTheme.menuBackgroundColor,
-      "--dd-option-text": finalTheme.optionTextColor,
-      "--dd-selected-text": finalTheme.selectedOptionTextColor,
-      "--dd-selected-bg": finalTheme.selectedOptionBackgroundColor,
-      "--dd-multi-selected-text": finalTheme.multiSelectSelectedOptionTextColor,
-      "--dd-multi-selected-bg":
-        finalTheme.multiSelectSelectedOptionBackgroundColor,
-      "--dd-focus-border": finalTheme.focusBorderColor,
-      ...style,
-    } as CSSProperties;
-  }, [theme, style]);
+  }, [theme]);
 
   // Handle outside click to close
   useEffect(() => {
@@ -184,7 +352,7 @@ export const Dropdown: FC<DropdownProps> = ({
         newValue = [...currentValues, option[valueField]];
       }
       newOption = options.filter((opt) =>
-        (newValue as any[]).includes(opt[valueField]),
+        (newValue as any[]).includes(opt[valueField])
       );
     } else {
       newValue = option[valueField];
@@ -200,7 +368,7 @@ export const Dropdown: FC<DropdownProps> = ({
 
   const handleRemoveOption = (
     optionValue: string | number,
-    e: React.MouseEvent,
+    e: React.MouseEvent
   ) => {
     e.stopPropagation();
     if (!onChange) return;
@@ -208,7 +376,7 @@ export const Dropdown: FC<DropdownProps> = ({
     const currentValues = Array.isArray(value) ? value : value ? [value] : [];
     const newValue = currentValues.filter((v) => v !== optionValue);
     const newOptions = options.filter((opt) =>
-      newValue.includes(opt[valueField]),
+      newValue.includes(opt[valueField])
     );
 
     onChange(newValue, newOptions);
@@ -217,14 +385,12 @@ export const Dropdown: FC<DropdownProps> = ({
   const handleClear = (e: React.MouseEvent) => {
     e.stopPropagation();
 
-    // If dropdown is open and searchable, clear search and close dropdown
     if (isOpen && searchable) {
       setSearchValue("");
       setIsOpen(false);
       return;
     }
 
-    // Otherwise, clear the selected values
     if (onChange) {
       onChange(multiSelect ? [] : "", multiSelect ? [] : []);
     }
@@ -240,7 +406,7 @@ export const Dropdown: FC<DropdownProps> = ({
             : String(opt[valueField]);
         return labelString.toLowerCase().includes(searchValue.toLowerCase());
       }),
-    [options, searchable, searchValue],
+    [options, searchable, searchValue, labelField, valueField]
   );
 
   // Keyboard Navigation
@@ -274,7 +440,7 @@ export const Dropdown: FC<DropdownProps> = ({
           setHighlightedIndex(0);
         } else {
           setHighlightedIndex((prev) =>
-            prev < filteredOptions.length - 1 ? prev + 1 : prev,
+            prev < filteredOptions.length - 1 ? prev + 1 : prev
           );
         }
         break;
@@ -319,17 +485,22 @@ export const Dropdown: FC<DropdownProps> = ({
   return (
     <div
       ref={dropdownRef}
-      className={`relative w-full ${className} ${
-        disabled ? "opacity-60 cursor-not-allowed" : ""
-      }`}
-      style={themeStyles}
+      className={className}
+      style={{
+        ...styles.container,
+        ...(disabled ? styles.containerDisabled : {}),
+        ...style,
+      }}
       onKeyDown={handleKeyDown}
     >
       {label && (
         <label
-          className={`block mb-1 text-sm font-medium text-gray-700 cursor-pointer ${labelClassName}`}
+          className={labelClassName}
           onClick={toggleDropdown}
-          style={theme ? { color: theme.textColor } : undefined}
+          style={{
+            ...styles.label,
+            ...(theme?.textColor ? { color: theme.textColor } : {}),
+          }}
         >
           {label}
         </label>
@@ -338,24 +509,14 @@ export const Dropdown: FC<DropdownProps> = ({
       {/* Trigger / Input Area */}
       <div
         onClick={handleTriggerClick}
-        className={`
-          flex items-center justify-between
-          w-full
-          bg-[var(--dd-bg)]
-          cursor-pointer
-          transition-all duration-200
-          text-[var(--dd-text)]
-          ${triggerClassName || "border rounded-lg"}
-        `}
+        className={triggerClassName}
         style={{
-          padding: triggerClassName ? undefined : "var(--dd-padding)",
-          minHeight: triggerClassName ? undefined : "42px",
-          borderColor: triggerClassName
-            ? undefined
-            : isOpen
-              ? "var(--dd-focus-border)"
-              : "#d1d5db",
-          outline: "none",
+          ...styles.trigger,
+          backgroundColor: themeStyles.backgroundColor,
+          color: themeStyles.textColor,
+          padding: themeStyles.padding,
+          minHeight: "42px",
+          borderColor: isOpen ? themeStyles.focusBorderColor : "#d1d5db",
           ...triggerStyle,
         }}
         role="button"
@@ -363,7 +524,7 @@ export const Dropdown: FC<DropdownProps> = ({
         aria-haspopup="listbox"
         aria-expanded={isOpen}
       >
-        <div className="flex flex-wrap gap-1 flex-1 overflow-hidden">
+        <div style={styles.triggerContent}>
           {searchable && (isOpen || selectedOptions.length === 0) ? (
             <input
               ref={inputRef}
@@ -374,7 +535,10 @@ export const Dropdown: FC<DropdownProps> = ({
               placeholder={
                 selectedOptions.length === 0 ? placeholder : "Search..."
               }
-              className="flex-1 outline-none bg-transparent min-w-[60px]"
+              style={{
+                ...styles.searchInput,
+                color: themeStyles.textColor,
+              }}
               onClick={(e) => {
                 e.stopPropagation();
                 if (!isOpen) {
@@ -384,36 +548,53 @@ export const Dropdown: FC<DropdownProps> = ({
               disabled={disabled}
             />
           ) : selectedOptions.length === 0 ? (
-            <span className="text-gray-400">{placeholder}</span>
+            <span style={styles.placeholder}>{placeholder}</span>
           ) : multiSelect ? (
             selectedOptions.map((opt) => (
               <span
                 key={opt[valueField]}
-                className="inline-flex items-center px-2 py-0.5 rounded text-sm animate-fadeIn"
                 style={{
-                  backgroundColor: "var(--dd-multi-selected-bg)",
-                  color: "var(--dd-multi-selected-text)",
+                  ...styles.multiTag,
+                  backgroundColor:
+                    themeStyles.multiSelectSelectedOptionBackgroundColor,
+                  color: themeStyles.multiSelectSelectedOptionTextColor,
                 }}
                 onClick={(e) => e.stopPropagation()}
               >
                 {opt[labelField]}
                 <span
-                  className="ml-1 cursor-pointer font-bold"
-                  style={{ color: "currentColor", opacity: 0.8 }}
+                  style={{
+                    ...styles.multiTagRemove,
+                    color: themeStyles.multiSelectSelectedOptionTextColor,
+                  }}
                   onClick={(e) => handleRemoveOption(opt[valueField], e)}
                 >
-                  &times;
+                  ×
                 </span>
               </span>
             ))
           ) : (
-            <span className="truncate">{selectedOptions[0][labelField]}</span>
+            <span
+              style={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {selectedOptions[0][labelField]}
+            </span>
           )}
         </div>
 
-        <div className="flex items-center gap-2 ml-2">
+        <div style={styles.actionsContainer}>
           {loading && (
-            <div className="animate-spin h-4 w-4 border-2 border-[var(--dd-primary)] border-t-transparent rounded-full" />
+            <div
+              style={{
+                ...styles.spinner,
+                borderColor: themeStyles.primaryColor,
+                borderTopColor: "transparent",
+              }}
+            />
           )}
 
           {/* Clear Icon */}
@@ -423,13 +604,19 @@ export const Dropdown: FC<DropdownProps> = ({
               (isOpen && searchable && searchValue)) && (
               <div
                 onClick={handleClear}
-                className="p-1 hover:bg-gray-100 rounded-full transition-colors z-10"
+                style={styles.clearButton}
                 title={
                   isOpen && searchable ? "Clear search" : "Clear selection"
                 }
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "#f3f4f6";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "transparent";
+                }}
               >
                 <svg
-                  className="w-3 h-3 text-gray-400 hover:text-gray-600"
+                  style={styles.icon}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -446,15 +633,17 @@ export const Dropdown: FC<DropdownProps> = ({
 
           {/* Chevron Icon */}
           <div
-            className={`transform transition-transform duration-200 ${
-              isOpen ? "rotate-180" : ""
-            } ${arrowIconClassName}`}
+            className={arrowIconClassName}
+            style={{
+              ...styles.chevronContainer,
+              transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+            }}
           >
             {arrowIcon ? (
               arrowIcon
             ) : (
               <svg
-                className="w-4 h-4 text-gray-500"
+                style={styles.chevronIcon}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -474,51 +663,57 @@ export const Dropdown: FC<DropdownProps> = ({
       {/* Dropdown Menu */}
       {isOpen && (
         <div
-          className={`absolute z-50 w-full mt-1 bg-[var(--dd-menu-bg)] border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-hidden flex flex-col animate-enter ${menuClassName}`}
+          className={menuClassName}
+          style={{
+            ...styles.menu,
+            backgroundColor: themeStyles.menuBackgroundColor,
+          }}
         >
           {loading ? (
-            <div className="px-4 py-8 flex justify-center items-center text-gray-400">
-              <div className="animate-spin h-6 w-6 border-2 border-[var(--dd-primary)] border-t-transparent rounded-full mr-2"></div>
+            <div style={styles.loadingContainer}>
+              <div
+                style={{
+                  ...styles.loadingSpinner,
+                  borderColor: themeStyles.primaryColor,
+                  borderTopColor: "transparent",
+                }}
+              />
               Loading options...
             </div>
           ) : (
-            <ul ref={listRef} className="py-1 overflow-y-auto" role="listbox">
+            <ul ref={listRef} style={styles.optionsList} role="listbox">
               {filteredOptions.length === 0 ? (
-                <li className="px-4 py-2 text-gray-500 text-center text-sm">
-                  No options found
-                </li>
+                <li style={styles.noOptions}>No options found</li>
               ) : (
                 filteredOptions.map((option, index) => {
                   const checked = isSelected(option[valueField]);
                   const isHighlighted = index === highlightedIndex;
+                  const isDisabledOption = option.disabled;
+
+                  let bgColor = "transparent";
+                  if (checked) {
+                    bgColor = themeStyles.selectedOptionBackgroundColor;
+                  } else if (isHighlighted) {
+                    bgColor = themeStyles.hoverColor;
+                  }
+
                   return (
                     <li
                       key={option[valueField]}
-                      className={`
-                        px-4 py-2 cursor-pointer transition-colors duration-150 flex items-center justify-between
-                        text-[var(--dd-option-text)]
-                        ${optionClassName}
-                        ${checked ? selectedOptionClassName : ""}
-                        `}
+                      className={`${optionClassName} ${checked ? selectedOptionClassName : ""}`}
                       style={{
+                        ...styles.option,
+                        ...(isDisabledOption ? styles.optionDisabled : {}),
                         backgroundColor:
-                          checked && selectedOptionClassName
+                          optionClassName || selectedOptionClassName
                             ? undefined
-                            : isHighlighted && !optionClassName
-                              ? "var(--dd-hover)"
-                              : checked
-                                ? "var(--dd-selected-bg)"
-                                : optionClassName
-                                  ? undefined
-                                  : "transparent",
+                            : bgColor,
                         color:
-                          checked && selectedOptionClassName
+                          optionClassName || selectedOptionClassName
                             ? undefined
-                            : optionClassName
-                              ? undefined
-                              : checked
-                                ? "var(--dd-selected-text)"
-                                : "var(--dd-option-text)",
+                            : checked
+                              ? themeStyles.selectedOptionTextColor
+                              : themeStyles.optionTextColor,
                         fontWeight: checked ? 500 : 400,
                       }}
                       onMouseEnter={() => setHighlightedIndex(index)}
@@ -526,11 +721,12 @@ export const Dropdown: FC<DropdownProps> = ({
                       aria-selected={checked}
                       onClick={(e) => handleOptionClick(option, e)}
                     >
-                      <div className="flex flex-col">
+                      <div style={styles.optionContent}>
                         <span>{option[labelField]}</span>
                         {option[sublabelField] && (
                           <span
-                            className={`text-xs text-gray-500 mt-0.5 ${sublabelClassName}`}
+                            className={sublabelClassName}
+                            style={styles.sublabel}
                           >
                             {option[sublabelField]}
                           </span>
@@ -538,8 +734,10 @@ export const Dropdown: FC<DropdownProps> = ({
                       </div>
                       {checked && (
                         <svg
-                          className="w-4 h-4"
-                          style={{ color: "var(--dd-selected-text)" }}
+                          style={{
+                            ...styles.checkIcon,
+                            color: themeStyles.selectedOptionTextColor,
+                          }}
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
