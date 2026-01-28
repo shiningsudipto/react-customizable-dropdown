@@ -1,6 +1,6 @@
 {
   "name": "react-customizable-dropdown",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A highly customizable, accessible, and premium React Dropdown component with built-in search, multi-select, field mapping, debouncing, sublabels, and extensive theming options.",
   "type": "module",
   "main": "./dist/dropdown.umd.js",
